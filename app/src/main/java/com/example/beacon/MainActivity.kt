@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -46,6 +48,7 @@ import kotlin.properties.Delegates
 class MainActivity : ComponentActivity() {
     lateinit var beaconReference: BeaconReference
     var alertDialog: AlertDialog? = null
+    var list_beacon = list_beaconVM()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -102,17 +105,18 @@ class MainActivity : ComponentActivity() {
     val rangingObserver = Observer<Collection<Beacon>> { beacons ->
         Log.d(TAG, "Ranged: ${beacons.count()} beacons")
         if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
-            Toast.makeText(this, beacons.toString(), Toast.LENGTH_SHORT).show()
+            var a: ArrayList<Beacon> = ArrayList<Beacon>()
+            for (beacon in beacons) {
+                a.add(beacon)
+                Toast.makeText(this, beacon.toString(), Toast.LENGTH_SHORT).show()
+            }
+            list_beacon.update(a)
         }
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun home() {
-
-        var cnt by rememberSaveable {
-            mutableStateOf(0)
-        }
         var monitoringButton by rememberSaveable {
             mutableStateOf("Start Monitoring")
         }
@@ -152,11 +156,9 @@ class MainActivity : ComponentActivity() {
             if (beaconManager.rangedRegions.size == 0) {
                 beaconManager.startRangingBeacons(beaconReference.region)
                 rangingButton = "Stop Ranging"
-                cnt = 0
             } else {
                 beaconManager.stopRangingBeacons(beaconReference.region)
                 rangingButton = "Start Ranging"
-                cnt = 0
             }
         }
 
@@ -177,13 +179,19 @@ class MainActivity : ComponentActivity() {
                     Button(onClick = { monitoringButtonTapped() }) {
                         Text(text = monitoringButton)
                     }
+
                 }
             }
         ) { it ->
             Column(modifier = Modifier.padding(it)) {
-                Text(text = "Detected $cnt beacon(s)", modifier = Modifier.padding(bottom = 10.dp))
+                Text(
+                    text = "Detected ${list_beacon.list_beacon.value?.size} beacon(s)",
+                    modifier = Modifier.padding(bottom = 10.dp)
+                )
                 LazyColumn() {
-
+//                    items(list_beacon.list_beacon.value) { it ->
+//                        Text(text = it.toString())
+//                    }
                 }
             }
         }
