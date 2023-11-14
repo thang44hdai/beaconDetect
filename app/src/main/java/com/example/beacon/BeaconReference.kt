@@ -26,7 +26,6 @@ class BeaconReference : Application() {
         var parser = BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")
         parser.setHardwareAssistManufacturerCodes(arrayOf(0x004c).toIntArray())
         beaconManager.beaconParsers.add(parser)
-
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -42,7 +41,7 @@ class BeaconReference : Application() {
             return
         }
         beaconManager.startMonitoring(region)
-        beaconManager.startRangingBeacons(region)
+        //beaconManager.startRangingBeacons(region)
         val regionViewModel = beaconManager.getRegionViewModel(region)
         regionViewModel.regionState.observeForever(centralMonitoringObserver)
         regionViewModel.rangedBeacons.observeForever(centralRangingObserver)
@@ -77,8 +76,8 @@ class BeaconReference : Application() {
     @RequiresApi(Build.VERSION_CODES.O)
     fun setupForegroundService() {
         val builder = Notification.Builder(this, "BeaconReferenceApp")
-        builder.setSmallIcon(R.drawable.ic_launcher_background)
-        builder.setContentTitle("Scanning for Beacons")
+        builder.setSmallIcon(R.drawable.logo)
+        builder.setContentTitle("Scanning for True Love")
         val intent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE
@@ -94,25 +93,23 @@ class BeaconReference : Application() {
         ) as NotificationManager
         notificationManager.createNotificationChannel(channel);
         builder.setChannelId(channel.getId());
-        Log.d(TAG, "Calling enableForegroundServiceScanning")
         BeaconManager.getInstanceForApplication(this)
             .enableForegroundServiceScanning(builder.build(), 456);
-        Log.d(TAG, "Back from  enableForegroundServiceScanning")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun sendNotification() {
         val builder = NotificationCompat.Builder(this, "beacon-ref-notification-id")
-            .setContentTitle("Beacon Reference Application")
+            .setContentTitle("Beacon Detected App")
             .setContentText("A beacon is nearby.")
-            .setSmallIcon(R.drawable.ic_launcher_background)
-        val stackBuilder = TaskStackBuilder.create(this)
-        stackBuilder.addNextIntent(Intent(this, MainActivity::class.java))
-        val resultPendingIntent = stackBuilder.getPendingIntent(
-            0,
-            PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE
-        )
-        builder.setContentIntent(resultPendingIntent)
+            .setSmallIcon(R.drawable.logo)
+//        val stackBuilder = TaskStackBuilder.create(this)
+//        stackBuilder.addNextIntent(Intent(this, MainActivity::class.java))
+//        val resultPendingIntent = stackBuilder.getPendingIntent(
+//            0,
+//            PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE
+//        )
+//        builder.setContentIntent(resultPendingIntent)
         val channel = NotificationChannel(
             "beacon-ref-notification-id",
             "My Notification Name", NotificationManager.IMPORTANCE_DEFAULT
@@ -128,5 +125,7 @@ class BeaconReference : Application() {
 
     companion object {
         val TAG = "BeaconReference"
+        val CHANNEL_ID = "MyChannel"
+        val NOTIFICATION_ID = 1
     }
 }
