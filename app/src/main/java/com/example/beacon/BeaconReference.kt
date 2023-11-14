@@ -103,13 +103,13 @@ class BeaconReference : Application() {
             .setContentTitle("Beacon Detected App")
             .setContentText("A beacon is nearby.")
             .setSmallIcon(R.drawable.logo)
-        val stackBuilder = TaskStackBuilder.create(this)
-        stackBuilder.addNextIntent(Intent(this, MainActivity::class.java))
-        val resultPendingIntent = stackBuilder.getPendingIntent(
-            0,
-            PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE
-        )
-        builder.setContentIntent(resultPendingIntent)
+//        val stackBuilder = TaskStackBuilder.create(this)
+//        stackBuilder.addNextIntent(Intent(this, MainActivity::class.java))
+//        val resultPendingIntent = stackBuilder.getPendingIntent(
+//            0,
+//            PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE
+//        )
+//        builder.setContentIntent(resultPendingIntent)
         val channel = NotificationChannel(
             "beacon-ref-notification-id",
             "My Notification Name", NotificationManager.IMPORTANCE_DEFAULT
@@ -125,5 +125,7 @@ class BeaconReference : Application() {
 
     companion object {
         val TAG = "BeaconReference"
+        val CHANNEL_ID = "MyChannel"
+        val NOTIFICATION_ID = 1
     }
 }
