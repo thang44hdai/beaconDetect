@@ -4,6 +4,7 @@ import android.R
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.inputmethodservice.Keyboard
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -11,6 +12,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -76,22 +78,21 @@ class MainActivity : ComponentActivity() {
         super.onPause()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onResume() {
         super.onResume()
+        Toast.makeText(this, "OKe", Toast.LENGTH_SHORT).show()
+        (application as BeaconReference).setUpBeaconScanning()
     }
 
     val monitoringObserver = Observer<Int> { state ->
         var dialogTitle = "Beacons detected"
-        var dialogMessage = "didEnterRegionEvent has fired"
+        var dialogMessage = "Okeeeee"
         var stateString = "inside"
         if (state == MonitorNotifier.OUTSIDE) {
             dialogTitle = "No beacons detected"
-            dialogMessage = "didExitRegionEvent has fired"
+            dialogMessage = "Not Okeee"
             stateString = "outside"
-//            beaconCountTextView.text = "Outside of the beacon region -- no beacons detected"
-//            beaconListView.adapter = ArrayAdapter(this, R.layout.simple_list_item_1, arrayOf("--"))
-        } else {
-//            beaconCountTextView.text = "Inside the beacon region."
         }
         Log.d(TAG, "Monitoring state changed to : $stateString")
         val builder =
@@ -118,7 +119,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun home() {
         var monitoringButton by rememberSaveable {
-            mutableStateOf("Start Monitoring")
+            mutableStateOf("Stop Monitoring")
         }
         var rangingButton by rememberSaveable {
             mutableStateOf("Start Ranging")
@@ -160,6 +161,7 @@ class MainActivity : ComponentActivity() {
                 rangingButton = "Stop Ranging"
             } else {
                 beaconManager.stopRangingBeacons(beaconReference.region)
+                list_beacon = emptyList()
                 rangingButton = "Start Ranging"
             }
         }
@@ -193,10 +195,14 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 LazyColumn() {
-
-                    items(list_beacon) { it ->
-                        Text(text = it.toString())
-                    }
+                    if (list_beacon.size == 0) {
+                        item {
+                            Text(text = "Ranging...............")
+                        }
+                    } else
+                        items(list_beacon) { it ->
+                            Text(text = it.toString())
+                        }
                 }
             }
         }

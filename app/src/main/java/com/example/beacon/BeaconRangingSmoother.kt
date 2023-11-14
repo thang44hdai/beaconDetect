@@ -15,7 +15,6 @@ class BeaconRangingSmoother {
             }
             return visible
         }
-
     fun add(detectedBeacons: Collection<Beacon>): BeaconRangingSmoother {
         for (beacon in detectedBeacons) {
             beacon.lastCycleDetectionTimestamp = System.currentTimeMillis()
@@ -23,7 +22,6 @@ class BeaconRangingSmoother {
         }
         return this
     }
-
     companion object {
         var TAG = "BeaconRangingSmoother"
         var shared = BeaconRangingSmoother()
