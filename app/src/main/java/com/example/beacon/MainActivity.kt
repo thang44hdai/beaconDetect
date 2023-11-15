@@ -6,6 +6,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -34,15 +36,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.example.beacon.ui.theme.BeaconTheme
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
+import org.altbeacon.beacon.BeaconParser
+import org.altbeacon.beacon.BeaconTransmitter
 import org.altbeacon.beacon.MonitorNotifier
+import java.util.Arrays
 
 class MainActivity : ComponentActivity() {
     lateinit var beaconReference: BeaconReference
@@ -113,14 +122,14 @@ class MainActivity : ComponentActivity() {
         if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
             sendNotification("Phát hiện ${beacons.size} beacons")
             beaconViewModel.listBeacon.value = beacons.toList()
-        } else Toast.makeText(this, "No Beacons Detected", Toast.LENGTH_SHORT).show()
+        } else Toast.makeText(this, "Stop Ranging", Toast.LENGTH_SHORT).show()
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun home() {
-        var monitoringButton by rememberSaveable {
-            mutableStateOf("Stop Monitoring")
+        var transmitterButton by rememberSaveable {
+            mutableStateOf("Start Transmitting")
         }
         var rangingButton by rememberSaveable {
             mutableStateOf("Start Ranging")
@@ -167,6 +176,40 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        fun trasmittingButtonTapped() {
+            val beacon = Beacon.Builder()
+                .setId1("2f234454-cf6d-4a0f-adf2-f4911ba9ffa6")
+                .setId2("1")
+                .setId3("2")
+                .setManufacturer(0x0118)
+                .setTxPower(-59)
+                .setDataFields(listOf(0L))
+                .build()
+            val beaconParser = BeaconParser()
+                .setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25")
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.BLUETOOTH_ADVERTISE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // Nếu quyền chưa được cấp, yêu cầu quyền từ người dùng
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(android.Manifest.permission.BLUETOOTH_ADVERTISE),
+                    1
+                )
+            } else {
+                if (transmitterButton == "Start Transmitting") {
+                    transmitterButton = "Stop Transmitting"
+                    val beaconTransmitter = BeaconTransmitter(getApplicationContext(), beaconParser)
+                    beaconTransmitter.startAdvertising(beacon)
+                } else
+                    transmitterButton = "Start Transmitting"
+            }
+
+
+        }
+
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -183,20 +226,25 @@ class MainActivity : ComponentActivity() {
                     }) {
                         Text(text = rangingButton)
                     }
-//                    Button(onClick = { monitoringButtonTapped() }) {
-//                        Text(text = monitoringButton)
-//                    }
+                    Button(onClick = { trasmittingButtonTapped() }) {
+                        Text(text = transmitterButton)
+                    }
                 }
             }
         ) { it ->
             Column(modifier = Modifier.padding(it)) {
                 Text(
                     text = "Detected ${list_beacon.size} beacon(s)",
-                    modifier = Modifier.padding(bottom = 10.dp)
+                    modifier = Modifier
+                        .padding(bottom = 10.dp)
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
-                LazyColumn(modifier = Modifier.padding(
-                    horizontal = 20.dp
-                )) {
+                LazyColumn(
+                    modifier = Modifier.padding(
+                        horizontal = 20.dp
+                    )
+                ) {
                     if (list_beacon.size == 0) {
                         item {
                             Text(text = "Ranging...............")
