@@ -17,7 +17,6 @@ import org.altbeacon.beacon.*
 import com.example.beacon.R
 
 class BeaconReference : Application() {
-
     var region = Region("all-beacons", null, null, null)
 
     override fun onCreate() {
@@ -41,7 +40,7 @@ class BeaconReference : Application() {
             return
         }
         beaconManager.startMonitoring(region)
-        //beaconManager.startRangingBeacons(region)
+//        beaconManager.startRangingBeacons(region)
         val regionViewModel = beaconManager.getRegionViewModel(region)
         regionViewModel.regionState.observeForever(centralMonitoringObserver)
         regionViewModel.rangedBeacons.observeForever(centralRangingObserver)

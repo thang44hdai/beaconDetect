@@ -71,17 +71,16 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    override fun onPause() {
-        super.onPause()
-    }
+//    override fun onPause() {
+//        super.onPause()
+//        startService(Intent(this@MainActivity, MyForegroundService::class.java))
+//    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onResume() {
         super.onResume()
         Toast.makeText(this, "OKe", Toast.LENGTH_SHORT).show()
-//        (application as BeaconReference).setUpBeaconScanning()
     }
-
 
     val monitoringObserver = Observer<Int> { state ->
         var dialogTitle = "Beacons detected"
@@ -154,7 +153,7 @@ class MainActivity : ComponentActivity() {
         fun rangingButtonTapped() {
             val beaconManager = BeaconManager.getInstanceForApplication(this)
             if (beaconManager.rangedRegions.size == 0) {
-//                beaconManager.startRangingBeacons(beaconReference.region)
+                beaconManager.startRangingBeacons(beaconReference.region)
                 rangingButton = "Stop Ranging"
             } else {
                 beaconManager.stopRangingBeacons(beaconReference.region)
@@ -175,7 +174,17 @@ class MainActivity : ComponentActivity() {
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Button(onClick = {
-                        rangingButtonTapped();
+                        //rangingButtonTapped();
+                        val beaconManager = BeaconManager.getInstanceForApplication(this@MainActivity)
+                        if (beaconManager.rangedRegions.size == 0) {
+                            beaconManager.startRangingBeacons(beaconReference.region)
+                            rangingButton = "Stop Ranging"
+                        } else {
+                            beaconManager.stopRangingBeacons(beaconReference.region)
+                            list_beacon = emptyList()
+                            rangingButton = "Start Ranging"
+                        }
+                        startService(Intent(this@MainActivity, MyForegroundService::class.java))
                     }) {
                         Text(text = rangingButton)
                     }
@@ -235,10 +244,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         val TAG = "MainActivity"
-//        val PERMISSION_REQUEST_BACKGROUND_LOCATION = 0
-//        val PERMISSION_REQUEST_BLUETOOTH_SCAN = 1
-//        val PERMISSION_REQUEST_BLUETOOTH_CONNECT = 2
-//        val PERMISSION_REQUEST_FINE_LOCATION = 3
     }
 }
 

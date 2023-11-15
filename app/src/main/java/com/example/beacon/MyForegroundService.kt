@@ -1,7 +1,9 @@
 package com.example.beacon
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -14,31 +16,60 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.Observer
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
+import org.altbeacon.beacon.BeaconParser
+import org.altbeacon.beacon.MonitorNotifier
+import org.altbeacon.beacon.Region
 
-class MyForegroundService(context: Context) : Service() {
+class MyForegroundService() : Service() {
     lateinit var beaconReference: BeaconReference
+    var region = Region("all-beacons", null, null, null)
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        beaconReference = applicationContext as BeaconReference
-        val beaconManager = BeaconManager.getInstanceForApplication(this)
-        val regionViewModel = BeaconManager.getInstanceForApplication(applicationContext)
-            .getRegionViewModel(beaconReference.region)
-        beaconManager.startRangingBeacons(beaconReference.region)
-        return START_NOT_STICKY
+        setupBeaconScanning()
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onCreate() {
+        super.onCreate()
+        var beaconManager = BeaconManager.getInstanceForApplication(this)
+        var parser = BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")
+        parser.setHardwareAssistManufacturerCodes(arrayOf(0x004c).toIntArray())
+        beaconManager.beaconParsers.add(parser)
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun setupBeaconScanning() {
+        beaconReference = application as BeaconReference
+
+        var beaconManager = BeaconManager.getInstanceForApplication(this)
+        beaconManager.startRangingBeacons(region)
+
+        val regionViewModel =
+            BeaconManager.getInstanceForApplication(this).getRegionViewModel(region)
+        regionViewModel.rangedBeacons.observeForever(rangingObserver)
+
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     val rangingObserver = Observer<Collection<Beacon>> { beacons ->
         Log.d(MainActivity.TAG, "Ranged: ${beacons.count()} beacons")
-        if (BeaconManager.getInstanceForApplication(applicationContext).rangedRegions.size > 0) {
+        if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
             sendNotification("Phát hiện ${beacons.size} beacons")
-        } else Toast.makeText(applicationContext, "No Beacons Detected", Toast.LENGTH_SHORT).show()
+        } else {
+            sendNotification("No Beacons Detected")
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun sendNotification(content: String) {
-        val builder = NotificationCompat.Builder(applicationContext, "beacon-ref-notification-id")
+        val builder = NotificationCompat.Builder(this, "beacon-ref-notification-id")
             .setContentTitle("Beacon Detected App")
             .setContentText(content)
             .setSmallIcon(com.example.beacon.R.drawable.logo)
@@ -55,7 +86,4 @@ class MyForegroundService(context: Context) : Service() {
         notificationManager.notify(1, builder.build())
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        TODO("Not yet implemented")
-    }
 }
