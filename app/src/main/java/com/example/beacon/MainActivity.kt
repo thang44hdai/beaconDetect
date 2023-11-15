@@ -107,9 +107,6 @@ class MainActivity : ComponentActivity() {
     val rangingObserver = Observer<Collection<Beacon>> { beacons ->
         Log.d(TAG, "Ranged: ${beacons.count()} beacons")
         if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
-//            for (beacon in beacons) {
-//                Toast.makeText(this, beacon.toString(), Toast.LENGTH_SHORT).show()
-//            }
             sendNotification("Phát hiện ${beacons.size} beacons")
             beaconViewModel.listBeacon.value = beacons.toList()
         } else Toast.makeText(this, "No Beacons Detected", Toast.LENGTH_SHORT).show()
