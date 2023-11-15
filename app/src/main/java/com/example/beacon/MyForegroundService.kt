@@ -41,7 +41,6 @@ class MyForegroundService() : Service() {
         var parser = BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")
         parser.setHardwareAssistManufacturerCodes(arrayOf(0x004c).toIntArray())
         beaconManager.beaconParsers.add(parser)
-
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -60,10 +59,11 @@ class MyForegroundService() : Service() {
     @RequiresApi(Build.VERSION_CODES.O)
     val rangingObserver = Observer<Collection<Beacon>> { beacons ->
         Log.d(MainActivity.TAG, "Ranged: ${beacons.count()} beacons")
+        Log.i("Background Running", "OK")
         if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
             sendNotification("Phát hiện ${beacons.size} beacons")
         } else {
-            sendNotification("No Beacons Detected")
+            sendNotification("Stop Ranging")
         }
     }
 
