@@ -17,12 +17,14 @@ import org.altbeacon.beacon.*
 import com.example.beacon.R
 
 class BeaconReference : Application() {
-    var region = Region("all-beacons", null, null, null)
+    var region = Region("all_beacons", null, null, null)
 
     override fun onCreate() {
         super.onCreate()
         var beaconManager = BeaconManager.getInstanceForApplication(this)
-        var parser = BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")
+        var parser = BeaconParser().setBeaconLayout(
+            "m:2-3=" + "" + "0215,i:4-19,i:20-21,i:22-23,p:24-24"
+        )
         parser.setHardwareAssistManufacturerCodes(arrayOf(0x004c).toIntArray())
         beaconManager.beaconParsers.add(parser)
     }
